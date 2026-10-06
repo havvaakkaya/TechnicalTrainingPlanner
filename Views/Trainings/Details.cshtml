@@ -1,0 +1,33 @@
+@model TechnicalTrainingPlanner.ViewModels.Trainings.TrainingDetailsViewModel
+@{
+    ViewData["Title"] = "Eğitim detayı";
+}
+
+<a asp-controller="Trainings" asp-action="Index" class="d-inline-block mb-3">← Eğitim listesi</a>
+<h1 class="h3">@Model.Code · @Model.Name</h1>
+<a asp-controller="Trainings" asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-outline-primary mb-3">Düzenle</a>
+<p class="text-muted">@(Model.RuleBasis == "PILOT" ? "Sentetik pilot eğitim kuralı" : "Kaynağa dayalı tekrarlı eğitim gereksinimi")</p>
+
+<dl class="row">
+    <dt class="col-sm-3">Süre</dt><dd class="col-sm-9">@Model.DurationMinutes dakika</dd>
+    <dt class="col-sm-3">Tekrar</dt>
+    <dd class="col-sm-9">@(Model.RenewalMonths.HasValue ? $"{Model.RenewalMonths} ay" : "Tek sefer")
+        @if (Model.Code == "E01") { <span class="text-muted">(pilot takip tarihi)</span> }
+    </dd>
+    <dt class="col-sm-3">Kural dayanağı</dt>
+    <dd class="col-sm-9">@(Model.SourceReference ?? "Pilot senaryo")</dd>
+    <dt class="col-sm-3">Gerekli olduğu roller</dt>
+    <dd class="col-sm-9">@(Model.RequiredByRoles.Count == 0 ? "—" : string.Join(", ", Model.RequiredByRoles.Select(x => $"{x.Code} {x.Name}")))</dd>
+    <dt class="col-sm-3">Yetkili eğitmenler</dt>
+    <dd class="col-sm-9">@(Model.QualifiedInstructors.Count == 0 ? "—" : string.Join(", ", Model.QualifiedInstructors.Select(x => $"{x.Code} ({x.Name})")))</dd>
+    <dt class="col-sm-3">Hedef personel statüsü</dt>
+    <dd class="col-sm-9">@(Model.AudienceStatuses.Count == 0 ? "Ek statü şartı yok" : string.Join(" veya ", Model.AudienceStatuses.Select(x => x.Name)))</dd>
+    <dt class="col-sm-3">Ön koşul</dt>
+    <dd class="col-sm-9">@(Model.Prerequisites.Count == 0 ? "Yok" : string.Join(", ", Model.Prerequisites.Select(x => $"{x.Code} {x.Name}")))</dd>
+</dl>
+@if (Model.Code == "E01")
+{
+    <p class="alert alert-info">İki yıllık tekrarlı eğitim kapsamı kaynaklıdır. Buradaki son başarılı tamamlama + 24 ay hesabı kurumun gerçek programını veya bir lisans/sertifika bitiş tarihini temsil etmez.</p>
+    <p><a href="https://web.shgm.gov.tr/documents/sivilhavacilik/files/mevzuat/sektorel/talimatlar/20250916SHT-145.pdf"
+          target="_blank" rel="noopener noreferrer">SHGM SHT-145 kaynağını aç (145.A.35)</a></p>
+}

@@ -1,0 +1,68 @@
+@model TechnicalTrainingPlanner.ViewModels.Planning.NeedsPage
+@{
+    ViewData["Title"] = "İhtiyaçlar";
+}
+<h1 class="h3">Eğitim ihtiyaçları</h1>
+<p class="text-muted">Kurgusal pilot veriler. Her analiz seçilen ayın başlangıcındaki kayıtların ayrı bir anlık görüntüsüdür.</p>
+<div asp-validation-summary="All" class="text-danger"></div>
+<form asp-controller="Needs" asp-action="Calculate" method="post" class="card card-body mb-4">
+    <h2 class="h5">Yeni analiz oluştur</h2>
+    <div class="row g-3 align-items-end">
+        <div class="col-md-3"><label for="month" class="form-label">Planlama ayı</label>
+            <input id="month" type="month" name="month" value="@Model.Month" class="form-control" required /></div>
+        <div class="col-md-9"><span class="form-label d-block">Birimler</span>
+            @foreach (var d in Model.Departments)
+            {
+                <label class="form-check form-check-inline">
+                    <input class="form-check-input" type="checkbox" name="departmentIds" value="@d.Id" checked />
+                    <span class="form-check-label">@d.Code · @d.Name</span>
+                </label>
+            }
+        </div>
+        <div class="col-md-3"><button class="btn btn-primary" type="submit">İhtiyaçları hesapla</button></div>
+    </div>
+</form>
+@if (Model.Analyses.Count > 0)
+{
+    <form asp-action="Index" method="get" class="row g-2 align-items-end mb-3">
+        <div class="col-md-3"><label for="runId" class="form-label">Kayıtlı analiz</label>
+            <select id="runId" name="runId" class="form-select">
+                @foreach (var a in Model.Analyses)
+                {
+                    <option value="@a.Id" selected="@(Model.RunId == a.Id)">#@a.Id · @a.Start.ToString("MM.yyyy") · @a.NeedCount ihtiyaç</option>
+                }
+            </select></div>
+        <div class="col-md-3"><label for="departmentId" class="form-label">Birim</label>
+            <select id="departmentId" name="departmentId" class="form-select"><option value="">Tümü</option>
+                @foreach (var d in Model.Departments)
+                { <option value="@d.Id" selected="@(Model.DepartmentId == d.Id)">@d.Name</option> }
+            </select></div>
+        <div class="col-md-3"><label for="type" class="form-label">Durum</label>
+            <select id="type" name="type" class="form-select">
+                <option value="">Tümü</option>
+                <option value="OVERDUE" selected="@(Model.Type == "OVERDUE")">Gecikmiş</option>
+                <option value="DUE_SOON" selected="@(Model.Type == "DUE_SOON")">Yaklaşan</option>
+                <option value="MISSING" selected="@(Model.Type == "MISSING")">Eksik</option>
+            </select></div>
+        <div class="col-md-3"><button class="btn btn-outline-primary" type="submit">Filtrele</button></div>
+    </form>
+    @if (!Model.IsCurrent)
+    { <div class="alert alert-warning">Bu analizin ardından temel veriler değişti. Yeni plan için yeni analiz oluşturun.</div> }
+    <p><a asp-controller="Planning" asp-action="Index" asp-route-analysisId="@Model.RunId" class="btn btn-outline-primary">Bu dönemi planla</a></p>
+    <div class="table-responsive planner-scroll-list"><table class="table table-striped align-middle">
+        <thead><tr><th>Çalışan</th><th>Birim</th><th>Eğitim</th><th>Son tarih</th><th>Durum</th><th>Öncelik</th><th></th></tr></thead>
+        <tbody>
+        @foreach (var n in Model.Rows)
+        {
+            <tr><td>@n.EmployeeCode · @n.EmployeeName</td><td>@n.Department</td>
+                <td>@n.TrainingCode · @n.TrainingName</td>
+                <td>@(n.DueOn?.ToString("dd.MM.yyyy") ?? "—")</td>
+                <td>@(n.Type == "OVERDUE" ? "Gecikmiş" : n.Type == "DUE_SOON" ? "Yaklaşan" : "Eksik")
+                    @if (n.Critical) { <span class="badge bg-danger">Kritik</span> }
+                </td><td>@n.Priority</td>
+                <td><a asp-action="Details" asp-route-id="@n.Id">Gör</a></td></tr>
+        }
+        </tbody></table></div>
+    @if (Model.Rows.Count == 0) { <p class="text-muted">Bu filtrede ihtiyaç yok.</p> }
+}
+else { <p class="alert alert-info">Henüz analiz yok. Üstte ay ve birimleri seçerek başlayın.</p> }

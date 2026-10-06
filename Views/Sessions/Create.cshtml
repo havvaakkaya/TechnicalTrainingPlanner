@@ -1,0 +1,9 @@
+@model TechnicalTrainingPlanner.ViewModels.Sessions.SessionFormViewModel
+@{
+    ViewData["Title"] = "Yeni oturum";
+}
+<h1 class="h3">Yeni oturum</h1>
+<p class="text-muted">Saatleri İstanbul saatine göre girin. Eğitmen yetkisi, sınıf kapasitesi ve çakışmalar kaydetmeden önce denetlenir.</p>
+<form asp-controller="Sessions" asp-action="Create" method="post">
+    <partial name="_SessionForm" model="Model" />
+</form>

@@ -1,0 +1,73 @@
+@model TechnicalTrainingPlanner.ViewModels.Planning.ReportPage?
+@{ ViewData["Title"] = "Raporlar"; }
+<h1 class="h3">Raporlar</h1>
+<p class="text-muted">Kurgusal pilot sonuçları. Atama, eğitimin tamamlandığı anlamına gelmez.</p>
+@if (Model is null)
+{
+    <div class="alert alert-info">Henüz seçilmiş plan yok. <a asp-controller="Planning" asp-action="Index">Planlama</a> ekranından başlatın.</div>
+}
+else
+{
+    @if (!Model.IsCurrent)
+    { <div class="alert alert-warning">Bu rapor eski analizden kaydedilmiştir; temel veriler değişti. Sayılar eski koşunun anlık görüntüsüdür.</div> }
+    @if (Model.Assignments.Count == 0 && Model.Methods.First(x => x.Id == Model.RunId).Status == "NO_ASSIGNMENTS")
+    { <div class="alert alert-warning">Bu dönemde hiçbir ihtiyaç atanamadı. Aşağıdaki atanamama nedenlerini inceleyin.</div> }
+    <form asp-action="Index" method="get" class="row g-2 align-items-end mb-3">
+        <input type="hidden" name="runId" value="@Model.RunId" />
+        <div class="col-md-3"><label for="departmentId" class="form-label">Birim</label>
+            <select id="departmentId" name="departmentId" class="form-select"><option value="">Tümü</option>
+                @foreach (var d in Model.Departments)
+                { <option value="@d.Id" selected="@(Model.DepartmentId == d.Id)">@d.Name</option> }
+            </select></div>
+        <div class="col-md-3"><label for="trainingId" class="form-label">Eğitim</label>
+            <select id="trainingId" name="trainingId" class="form-select"><option value="">Tümü</option>
+                @foreach (var t in Model.Trainings)
+                { <option value="@t.Id" selected="@(Model.TrainingId == t.Id)">@t.Code · @t.Name</option> }
+            </select></div>
+        <div class="col-md-3"><label for="status" class="form-label">Atama durumu</label>
+            <select id="status" name="status" class="form-select">
+                <option value="">Tümü</option>
+                <option value="ASSIGNED" selected="@(Model.Status == "ASSIGNED")">Atanan</option>
+                <option value="UNASSIGNED" selected="@(Model.Status == "UNASSIGNED")">Atanamayan</option>
+            </select></div>
+        <div class="col-md-3"><button class="btn btn-outline-primary" type="submit">Filtrele</button></div>
+    </form>
+    <div class="card card-body mb-3">
+        <h2 class="h5">Rapor özeti · @Model.Start.ToString("MM.yyyy") · @Model.Method</h2>
+        <p class="mb-2">Filtrede @Model.Needs ihtiyaç · @Model.Assignments.Count atanan · @Model.Unassigned.Count atanamayan ·
+            @Model.Assignments.Count(x => x.Critical) karşılanan kritik ihtiyaç</p>
+        <div class="d-flex gap-2">
+            <button class="btn btn-link btn-sm" type="button" data-bs-toggle="modal" data-bs-target="#scoreModal">Öncelik puanı nasıl hesaplanır?</button>
+            <button class="btn btn-outline-primary" type="button" data-bs-toggle="modal" data-bs-target="#compareModal">Yöntem karşılaştırmasını gör</button>
+            <a class="btn btn-primary" asp-action="Export" asp-route-runId="@Model.RunId"
+               asp-route-departmentId="@Model.DepartmentId" asp-route-trainingId="@Model.TrainingId"
+               asp-route-status="@Model.Status">Excel indir</a>
+        </div>
+    </div>
+    <div class="modal fade" id="scoreModal" tabindex="-1" aria-labelledby="scoreTitle" aria-hidden="true">
+        <div class="modal-dialog"><div class="modal-content"><div class="modal-header"><h2 class="modal-title h5" id="scoreTitle">Öncelik puanı</h2>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button></div>
+            <div class="modal-body"><p>Bu puan çalışanın ilgili eğitimi alma aciliyetini anlatır. Gecikmiş ihtiyaç: 3000 + en fazla 365 gecikme günü. Ay içinde dolacak ihtiyaç: 3000 + ay sonuna kalan gün. Ay sonrasındaki 60 günlük ihtiyaç: 2000 + yakınlık puanı. Başarılı geçmişi olmayan ihtiyaç: 1000.</p>
+                <p>Kritik ihtiyaç, son tarihi geçmiş veya seçili ay içinde dolacak ihtiyaçtır. Plan seçiminde önce karşılanan kritik ihtiyaç sayısı, sonra öncelik puanları ve vardiya tamponu değerlendirilir. Rapor toplamı atanan kişilerin ihtiyaç puanları toplamıdır.</p></div></div></div>
+    </div>
+    <div class="modal fade" id="compareModal" tabindex="-1" aria-labelledby="compareTitle" aria-hidden="true">
+        <div class="modal-dialog modal-lg"><div class="modal-content"><div class="modal-header"><h2 class="modal-title h5" id="compareTitle">Yöntem karşılaştırması</h2>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button></div>
+            <div class="modal-body"><div class="table-responsive"><table class="table"><thead><tr><th>Yöntem</th><th>Durum</th><th>Atanan</th><th>Kritik</th><th>Öncelik toplamı</th><th>Amaç puanı</th><th>Seçim</th></tr></thead>
+            <tbody>@foreach (var m in Model.Methods)
+            { <tr><td>@m.Method</td><td>@m.Status</td><td>@m.Assigned</td><td>@m.Critical</td><td>@m.PrioritySum</td><td>@m.Objective</td>
+                <td>@(m.Selected ? "Nihai" : "—") <a asp-action="Index" asp-route-runId="@m.Id">Rapor</a></td></tr> }</tbody></table></div>
+            <p class="small text-muted">Bu tablo seçili analizin tamamını karşılaştırır; üstteki filtreler aşağıdaki atama listelerine ve Excel'e uygulanır. Önce karşılanan kritik ihtiyaç sayısı, sonra toplam öncelik ve vardiya tercihi değerlendirilir. Eşitlikte GREEDY seçilir.</p></div></div></div>
+    </div>
+    <h2 class="h5 mt-4">Atananlar</h2>
+    <div class="table-responsive planner-scroll-list planner-report-list"><table class="table table-striped"><thead><tr><th>Çalışan</th><th>Birim</th><th>Eğitim</th><th>Son tarih</th><th>Oturum</th><th>Sınıf / eğitmen</th><th>Puan</th></tr></thead>
+        <tbody>@foreach (var x in Model.Assignments)
+        { <tr><td>@x.Employee</td><td>@x.Department</td><td><a asp-controller="Needs" asp-action="Details" asp-route-id="@x.NeedId">@x.Training</a></td>
+            <td>@(x.DueOn?.ToString("dd.MM.yyyy") ?? "—")</td><td>@x.StartsLocal.ToString("dd.MM.yyyy HH:mm")</td>
+            <td>@x.Classroom / @x.Instructor</td><td>@x.Priority @(x.Critical ? "●" : "")</td></tr> }</tbody></table></div>
+    <h2 class="h5 mt-4">Atanamayanlar ve nedenleri</h2>
+    <div class="table-responsive planner-scroll-list planner-report-list"><table class="table table-striped"><thead><tr><th>Çalışan</th><th>Birim</th><th>Eğitim</th><th>Puan</th><th>Açıklama</th></tr></thead>
+        <tbody>@foreach (var x in Model.Unassigned)
+        { <tr><td>@x.Employee</td><td>@x.Department</td><td><a asp-controller="Needs" asp-action="Details" asp-route-id="@x.NeedId">@x.Training</a></td>
+            <td>@x.Priority</td><td>@x.Reasons</td></tr> }</tbody></table></div>
+}

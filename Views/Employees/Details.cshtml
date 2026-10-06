@@ -1,0 +1,41 @@
+@model TechnicalTrainingPlanner.ViewModels.Employees.EmployeeDetailsViewModel
+@{
+    ViewData["Title"] = "Çalışan detayı";
+}
+
+<a asp-controller="Employees" asp-action="Index" class="d-inline-block mb-3">← Çalışan listesi</a>
+<h1 class="h3">@Model.DisplayName <small class="text-muted">(@Model.Code)</small></h1>
+<p class="text-muted">Sentetik pilot çalışan kaydı</p>
+<a asp-controller="Employees" asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-outline-primary mb-3">Düzenle</a>
+
+<dl class="row">
+    <dt class="col-sm-3">Birim</dt><dd class="col-sm-9">@Model.DepartmentName</dd>
+    <dt class="col-sm-3">Görev rolü</dt><dd class="col-sm-9">@Model.JobRoleName</dd>
+    <dt class="col-sm-3">Personel statüsü</dt>
+    <dd class="col-sm-9">@(Model.PersonnelStatuses.Count == 0 ? "—" : string.Join(", ", Model.PersonnelStatuses))</dd>
+    <dt class="col-sm-3">Durum</dt><dd class="col-sm-9">@(Model.IsActive ? "Aktif" : "Pasif")</dd>
+</dl>
+
+<h2 class="h5 mt-4">Eğitim geçmişi</h2>
+<p class="text-muted">Bunlar geçmiş tamamlama kayıtlarıdır; gelecekteki oturum ataması değildir.</p>
+<a asp-controller="Employees" asp-action="AddTrainingHistory" asp-route-id="@Model.Id"
+   class="btn btn-outline-primary mb-3">Tamamlama kaydı ekle</a>
+<div class="table-responsive">
+    <table class="table table-sm table-striped">
+        <thead><tr><th>Eğitim</th><th>Tamamlama tarihi</th><th>Sonuç</th></tr></thead>
+        <tbody>
+        @foreach (var item in Model.TrainingHistory)
+        {
+            <tr>
+                <td>@item.TrainingCode · @item.TrainingName</td>
+                <td>@item.CompletedOn.ToString("dd.MM.yyyy")</td>
+                <td>@(item.Passed ? "Başarılı" : "Başarısız")</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+</div>
+@if (Model.TrainingHistory.Count == 0)
+{
+    <p class="text-muted">Eğitim geçmişi kaydı yok.</p>
+}

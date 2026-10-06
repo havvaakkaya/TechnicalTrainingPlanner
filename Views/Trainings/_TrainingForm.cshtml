@@ -1,0 +1,104 @@
+@model TechnicalTrainingPlanner.ViewModels.Trainings.TrainingFormViewModel
+
+<div asp-validation-summary="All" class="text-danger mb-3"></div>
+<div class="row g-3">
+    <div class="col-md-3">
+        <label asp-for="Code" class="form-label">Eğitim kodu</label>
+        @if (Model.Id == 0)
+        {
+            <input asp-for="Code" class="form-control" placeholder="Örn. E16" />
+        }
+        else
+        {
+            <input asp-for="Code" class="form-control" readonly />
+        }
+        <span asp-validation-for="Code" class="text-danger"></span>
+    </div>
+    <div class="col-md-9">
+        <label asp-for="Name" class="form-label">Eğitim adı</label>
+        <input asp-for="Name" class="form-control" />
+        <span asp-validation-for="Name" class="text-danger"></span>
+    </div>
+    <div class="col-md-4">
+        <label asp-for="DurationMinutes" class="form-label">Süre (dakika)</label>
+        @if (Model.HasSessions)
+        {
+            <input asp-for="DurationMinutes" type="number" class="form-control" readonly />
+        }
+        else
+        {
+            <input asp-for="DurationMinutes" type="number" min="1" class="form-control" />
+        }
+        <span asp-validation-for="DurationMinutes" class="text-danger"></span>
+        @if (Model.HasSessions)
+        {
+            <div class="form-text">Bu eğitime bağlı oturum bulunduğu için süre sabittir.</div>
+        }
+    </div>
+    <div class="col-md-4">
+        <label asp-for="RenewalMonths" class="form-label">Tekrar aralığı (ay)</label>
+        @if (Model.IsSourceBased)
+        {
+            <input asp-for="RenewalMonths" type="number" class="form-control" readonly />
+        }
+        else
+        {
+            <input asp-for="RenewalMonths" type="number" min="1" class="form-control" />
+        }
+        <span asp-validation-for="RenewalMonths" class="text-danger"></span>
+        <div class="form-text">Tek seferlik eğitim için boş bırakın. E01 için 24 ay sabittir.</div>
+    </div>
+    <div class="col-12">
+        <fieldset class="border rounded p-3">
+            <legend class="float-none w-auto px-2 fs-6">Gerekli olduğu görev rolleri</legend>
+            @foreach (var role in Model.Roles)
+            {
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="SelectedRoleIds"
+                           value="@role.Value" id="role_@role.Value"
+                           checked="@Model.SelectedRoleIds.Contains(int.Parse(role.Value))" />
+                    <label class="form-check-label" for="role_@role.Value">@role.Text</label>
+                </div>
+            }
+        </fieldset>
+    </div>
+    <div class="col-12">
+        <fieldset class="border rounded p-3">
+            <legend class="float-none w-auto px-2 fs-6">Bu eğitimi verebilen eğitmenler</legend>
+            @foreach (var instructor in Model.Instructors)
+            {
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="SelectedInstructorIds"
+                           value="@instructor.Value" id="instructor_@instructor.Value"
+                           checked="@Model.SelectedInstructorIds.Contains(int.Parse(instructor.Value))" />
+                    <label class="form-check-label" for="instructor_@instructor.Value">@instructor.Text</label>
+                </div>
+            }
+        </fieldset>
+    </div>
+    <div class="col-12">
+        <fieldset class="border rounded p-3">
+            <legend class="float-none w-auto px-2 fs-6">Ön koşul eğitimleri</legend>
+            @if (Model.IsSourceBased)
+            {
+                <p class="text-muted small mb-0">E01 için ön koşul tanımlanmaz.</p>
+            }
+            else
+            {
+                @foreach (var item in Model.AvailablePrerequisites)
+                {
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="SelectedPrerequisiteIds"
+                               value="@item.Value" id="prerequisite_@item.Value"
+                               checked="@Model.SelectedPrerequisiteIds.Contains(int.Parse(item.Value))" />
+                        <label class="form-check-label" for="prerequisite_@item.Value">@item.Text</label>
+                    </div>
+                }
+            }
+        </fieldset>
+    </div>
+</div>
+<div class="mt-4 d-flex gap-2">
+    <button type="submit" class="btn btn-primary">Kaydet</button>
+    <a asp-controller="Trainings" asp-action="Index" class="btn btn-outline-secondary">Vazgeç</a>
+</div>

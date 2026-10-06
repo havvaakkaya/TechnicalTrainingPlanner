@@ -1,0 +1,43 @@
+.planner-brand {
+    color: #1d3046;
+    font-size: 1.23rem;
+    font-weight: 700;
+}
+
+.navbar .nav-link {
+    font-size: 1rem;
+    transition: color .15s ease;
+}
+
+.navbar .nav-link.planner-nav-active {
+    color: #263d57;
+    font-size: 1.04rem;
+    font-weight: 600;
+}
+
+.planner-scroll-list {
+    max-height: min(64vh, 640px);
+    overflow: auto;
+    scrollbar-gutter: stable;
+    border: 1px solid #dee2e6;
+    border-radius: .375rem;
+}
+
+.planner-scroll-list .table {
+    margin-bottom: 0;
+}
+
+.planner-scroll-list thead th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background: #f2f5f9;
+}
+
+.planner-report-list {
+    max-height: min(48vh, 480px);
+}
+
+@media (max-width: 600px) {
+    .planner-scroll-list { max-height: 58vh; }
+}

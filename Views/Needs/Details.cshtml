@@ -1,0 +1,16 @@
+@model TechnicalTrainingPlanner.ViewModels.Planning.NeedDetailsPage
+@{ ViewData["Title"] = "İhtiyaç nedeni"; }
+<h1 class="h3">@Model.Need.EmployeeCode · @Model.Need.TrainingCode</h1>
+<p class="text-muted">Kurgusal pilot ihtiyacı · Analiz #@Model.RunId</p>
+<dl class="row">
+    <dt class="col-sm-4">Çalışan / rol</dt><dd class="col-sm-8">@Model.Need.EmployeeName · @Model.Role</dd>
+    <dt class="col-sm-4">Eğitim / dayanak</dt><dd class="col-sm-8">@Model.Need.TrainingName · @Model.RuleBasis @Model.SourceReference</dd>
+    <dt class="col-sm-4">Son başarılı tamamlama</dt><dd class="col-sm-8">@(Model.LastCompleted?.ToString("dd.MM.yyyy") ?? "Yok")</dd>
+    <dt class="col-sm-4">Tekrar aralığı</dt><dd class="col-sm-8">@(Model.RenewalMonths is int m ? $"{m} ay" : "Tek sefer")</dd>
+    <dt class="col-sm-4">Pilot takip tarihi</dt><dd class="col-sm-8">@(Model.Need.DueOn?.ToString("dd.MM.yyyy") ?? "Yok; önceki başarı kaydı bulunamadı")</dd>
+    <dt class="col-sm-4">İhtiyaç durumu</dt><dd class="col-sm-8">@Model.Need.Type @(Model.Need.Critical ? "· Kritik" : "")</dd>
+    <dt class="col-sm-4">Öncelik puanı</dt><dd class="col-sm-8">@Model.Need.Priority</dd>
+    <dt class="col-sm-4">Ek personel statüsü</dt><dd class="col-sm-8">@(Model.AudienceStatuses.Length == 0 ? "Yok" : string.Join(", ", Model.AudienceStatuses))</dd>
+</dl>
+<p>Bu ihtiyaç, rolün eğitim gerekliliği ve yukarıdaki başarı/tekrar kayıtlarına göre analiz tarihinde hesaplandı. Atanmak tamamlanma kaydı oluşturmaz.</p>
+<a asp-action="Index" asp-route-runId="@Model.RunId" class="btn btn-outline-secondary">Listeye dön</a>

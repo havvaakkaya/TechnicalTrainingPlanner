@@ -1,0 +1,8 @@
+@model TechnicalTrainingPlanner.ViewModels.Sessions.SessionFormViewModel
+@{
+    ViewData["Title"] = "Oturumu düzenle";
+}
+<h1 class="h3">Oturumu düzenle</h1>
+<form asp-controller="Sessions" asp-action="Edit" asp-route-id="@Model.Id" method="post">
+    <partial name="_SessionForm" model="Model" />
+</form>

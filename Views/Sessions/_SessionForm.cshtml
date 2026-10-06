@@ -1,0 +1,56 @@
+@model TechnicalTrainingPlanner.ViewModels.Sessions.SessionFormViewModel
+
+<div asp-validation-summary="All" class="text-danger mb-3"></div>
+<div class="row g-3">
+    <div class="col-md-6">
+        <label asp-for="TrainingId" class="form-label">Eğitim</label>
+        <select asp-for="TrainingId" asp-items="Model.Trainings" class="form-select">
+            <option value="0">Eğitim seçiniz</option>
+        </select>
+        <span asp-validation-for="TrainingId" class="text-danger"></span>
+    </div>
+    <div class="col-md-6">
+        <label asp-for="InstructorId" class="form-label">Eğitmen</label>
+        <select asp-for="InstructorId" asp-items="Model.Instructors" class="form-select">
+            <option value="0">Eğitmen seçiniz</option>
+        </select>
+        <span asp-validation-for="InstructorId" class="text-danger"></span>
+        <div class="form-text">Eğitmen seçilen eğitimi verme yetkisine sahip olmalıdır.</div>
+    </div>
+    <div class="col-md-6">
+        <label asp-for="ClassroomId" class="form-label">Sınıf</label>
+        <select asp-for="ClassroomId" asp-items="Model.Classrooms" class="form-select">
+            <option value="0">Sınıf seçiniz</option>
+        </select>
+        <span asp-validation-for="ClassroomId" class="text-danger"></span>
+    </div>
+    <div class="col-md-3">
+        <label asp-for="Capacity" class="form-label">Oturum kontenjanı</label>
+        <input asp-for="Capacity" type="number" min="1" class="form-control" />
+        <span asp-validation-for="Capacity" class="text-danger"></span>
+    </div>
+    <div class="col-md-3">
+        <label asp-for="Status" class="form-label">Durum</label>
+        <select asp-for="Status" class="form-select">
+            <option value="PLANNED">Planlı</option>
+            <option value="CANCELLED">İptal</option>
+        </select>
+        <span asp-validation-for="Status" class="text-danger"></span>
+    </div>
+    <div class="col-md-6">
+        <label asp-for="StartsAtLocal" class="form-label">Başlangıç (İstanbul saati)</label>
+        <input asp-for="StartsAtLocal" asp-format="{0:yyyy-MM-ddTHH:mm}"
+               type="datetime-local" class="form-control" />
+        <span asp-validation-for="StartsAtLocal" class="text-danger"></span>
+    </div>
+    <div class="col-md-6">
+        <label asp-for="EndsAtLocal" class="form-label">Bitiş (İstanbul saati)</label>
+        <input asp-for="EndsAtLocal" asp-format="{0:yyyy-MM-ddTHH:mm}"
+               type="datetime-local" class="form-control" />
+        <span asp-validation-for="EndsAtLocal" class="text-danger"></span>
+    </div>
+</div>
+<div class="mt-4 d-flex gap-2">
+    <button type="submit" class="btn btn-primary">Kaydet</button>
+    <a asp-controller="Sessions" asp-action="Index" class="btn btn-outline-secondary">Vazgeç</a>
+</div>

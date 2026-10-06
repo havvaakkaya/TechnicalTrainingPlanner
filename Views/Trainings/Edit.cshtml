@@ -1,0 +1,12 @@
+@model TechnicalTrainingPlanner.ViewModels.Trainings.TrainingFormViewModel
+@{
+    ViewData["Title"] = "Eğitimi düzenle";
+}
+<h1 class="h3">Eğitimi düzenle · @Model.Code</h1>
+@if (Model.IsSourceBased)
+{
+    <p class="text-muted">E01'in kaynaklı 24 aylık kuralı ve hedef personel statüleri bu formda değiştirilemez. Rol eşleşmeleri pilot kapsamıdır.</p>
+}
+<form asp-controller="Trainings" asp-action="Edit" asp-route-id="@Model.Id" method="post">
+    <partial name="_TrainingForm" model="Model" />
+</form>

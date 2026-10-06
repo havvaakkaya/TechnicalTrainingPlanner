@@ -1,0 +1,34 @@
+@model TechnicalTrainingPlanner.ViewModels.Sessions.SessionDetailsViewModel
+@{
+    ViewData["Title"] = "Oturum detayı";
+    var fromCalendar = Context.Request.Query["origin"].ToString() == "calendar";
+    var calendarAnalysisId = Context.Request.Query["analysisId"].ToString();
+}
+
+@if (fromCalendar)
+{
+    <a asp-controller="Calendar" asp-action="Index" asp-route-analysisId="@calendarAnalysisId"
+       class="d-inline-block mb-3">← Takvime dön</a>
+}
+else
+{
+    <a asp-controller="Sessions" asp-action="Index" class="d-inline-block mb-3">← Oturum listesine dön</a>
+}
+<h1 class="h3">@Model.TrainingCode · @Model.TrainingName</h1>
+<a asp-controller="Sessions" asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-outline-primary mb-3">Düzenle</a>
+<dl class="row">
+    <dt class="col-sm-3">Tarih ve saat</dt>
+    <dd class="col-sm-9">@Model.StartsAtLocal.ToString("dd.MM.yyyy HH:mm") – @Model.EndsAtLocal.ToString("dd.MM.yyyy HH:mm") (İstanbul)</dd>
+    <dt class="col-sm-3">Eğitmen</dt><dd class="col-sm-9">@Model.InstructorCode</dd>
+    <dt class="col-sm-3">Sınıf / konum</dt><dd class="col-sm-9">@Model.ClassroomCode / @Model.LocationCode</dd>
+    <dt class="col-sm-3">Kontenjan</dt><dd class="col-sm-9">@Model.Capacity</dd>
+    <dt class="col-sm-3">Durum</dt><dd class="col-sm-9">@(Model.Status == "PLANNED" ? "Planlı" : "İptal")</dd>
+    <dt class="col-sm-3">Katılımcı</dt><dd class="col-sm-9">@(Model.ParticipantCount?.ToString() ?? "Plan oluşturulmadı") / @Model.Capacity</dd>
+</dl>
+@if (Model.SelectedRunId.HasValue)
+{
+    <h2 class="h5">Seçilmiş planın katılımcıları</h2>
+    @if (Model.Participants.Count == 0) { <p>Bu oturuma çalışan atanmadı.</p> }
+    else { <ul>@foreach (var name in Model.Participants) { <li>@name</li> }</ul> }
+    <a asp-controller="Reports" asp-action="Index" asp-route-runId="@Model.SelectedRunId">Plan raporunu aç</a>
+}

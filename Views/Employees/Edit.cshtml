@@ -1,0 +1,8 @@
+@model TechnicalTrainingPlanner.ViewModels.Employees.EmployeeFormViewModel
+@{
+    ViewData["Title"] = "Çalışanı düzenle";
+}
+<h1 class="h3">Çalışanı düzenle</h1>
+<form asp-controller="Employees" asp-action="Edit" asp-route-id="@Model.Id" method="post">
+    <partial name="_EmployeeForm" model="Model" />
+</form>

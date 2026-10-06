@@ -1,0 +1,57 @@
+@model TechnicalTrainingPlanner.ViewModels.Planning.CalendarPage
+@{ ViewData["Title"] = "Takvim"; }
+<style>
+    .calendar-grid { display:grid; width:100%; grid-template-columns:repeat(7,minmax(0,1fr)); border-left:1px solid #d9e2eb; border-top:1px solid #d9e2eb; background:white; }
+    .calendar-grid > * { min-width:0; border-right:1px solid #d9e2eb; border-bottom:1px solid #d9e2eb; padding:.3rem .4rem; }
+    .calendar-day { min-height:135px; overflow:visible; } .calendar-outside { background:#f2f5f8; color:#8797a5; }
+    .calendar-event { display:block; margin:.2rem 0; padding:.2rem .3rem; background:#e5f1fb; border-radius:5px; font-size:.74rem; text-decoration:none; line-height:1.2; overflow-wrap:anywhere; }
+    .calendar-weekday { font-weight:700; text-align:center; background:#edf3fa; }
+    .calendar-session-strip { display:flex; gap:.75rem; overflow-x:auto; padding:.25rem .1rem .9rem; scroll-snap-type:x proximity; }
+    .calendar-session-card { flex:0 0 clamp(240px,27vw,310px); scroll-snap-align:start; }
+    @@media(max-width:850px) { .calendar-day { min-height:115px; } .calendar-event { font-size:.69rem; } }
+    @@media(max-width:600px) { .calendar-grid { display:none; } .calendar-session-card { flex-basis:82vw; } }
+</style>
+<h1 class="h3">Eğitim takvimi</h1>
+<p class="text-muted">Kurgusal pilot oturumları · @(Model.Month?.ToString("MM.yyyy") ?? "—") · Saatler İstanbul yerel saatidir.</p>
+@if (Model.AnalysisId is null)
+{ <p class="alert alert-info">Önce <a asp-controller="Needs" asp-action="Index">analiz</a> oluşturun.</p> }
+else
+{
+    var month = Model.Month!.Value;
+    var start = month.AddDays(-(((int)month.DayOfWeek + 6) % 7));
+    var cells = Enumerable.Range(0, 42).Select(i => start.AddDays(i)).ToArray();
+    if (Model.SelectedRunId is null)
+    { <p class="alert alert-info">Katılımcı sayıları plan oluşturulduktan sonra görünür.</p> }
+    <div class="calendar-grid" role="grid" aria-label="Aylık eğitim takvimi">
+        @foreach (string dayName in new[] { "Pzt", "Sal", "Çar", "Per", "Cum", "Cmt", "Paz" })
+        { <div class="calendar-weekday" role="columnheader">@dayName</div> }
+        @foreach (var day in cells)
+        {
+            <div class="calendar-day @(day.Month == month.Month ? "" : "calendar-outside")" role="gridcell">
+                <strong>@day.Day</strong>
+                @foreach (var e in Model.Entries.Where(x => DateOnly.FromDateTime(x.StartsLocal) == day))
+                {
+                    <a class="calendar-event" asp-controller="Sessions" asp-action="Details" asp-route-id="@e.SessionId"
+                       asp-route-origin="calendar" asp-route-analysisId="@Model.AnalysisId">
+                        @e.StartsLocal.ToString("HH:mm") · @(e.Training.Split('·')[0].Trim())<br />
+                        <small>@(e.Participants?.ToString() ?? "—") / @e.Capacity · @e.Classroom</small>
+                    </a>
+                }
+            </div>
+        }
+    </div>
+    <h2 class="h5 mt-4">Oturum listesi</h2>
+    <div class="calendar-session-strip" aria-label="İlk altı oturum; yatay kaydırılabilir">
+        @foreach (var e in Model.Entries.OrderBy(x => x.StartsLocal).Take(6))
+        { <div class="card calendar-session-card"><div class="card-body">
+            <h3 class="h6">@e.StartsLocal.ToString("dd.MM.yyyy dddd")</h3>
+            <p class="mb-1">@e.StartsLocal.ToString("HH:mm")–@e.EndsLocal.ToString("HH:mm") · @e.Training</p>
+            <p class="small mb-1">@e.Location / @e.Classroom · Eğitmen @e.Instructor</p>
+            <p class="small mb-2">@(e.Participants?.ToString() ?? "—") / @e.Capacity kişi</p>
+            <a asp-controller="Sessions" asp-action="Details" asp-route-id="@e.SessionId"
+               asp-route-origin="calendar" asp-route-analysisId="@Model.AnalysisId">Oturumu gör</a>
+        </div></div> }
+    </div>
+    if (Model.Entries.Count == 0) { <p>Bu ay oturum yok.</p> }
+    <div class="text-end mt-2"><a asp-controller="Sessions" asp-action="Index" class="btn btn-outline-primary">Tüm oturumlar →</a></div>
+}

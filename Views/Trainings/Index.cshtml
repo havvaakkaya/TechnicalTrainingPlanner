@@ -1,0 +1,39 @@
+@model TechnicalTrainingPlanner.ViewModels.Trainings.TrainingsIndexViewModel
+@{
+    ViewData["Title"] = "Eğitimler";
+}
+
+<h1 class="h3">Eğitimler</h1>
+<p class="text-muted">E01 kaynağa dayalı tekrarlı eğitim kuralıdır. E02–E15 katalog ve tekrar kuralları sentetik pilot senaryosudur.</p>
+<a asp-controller="Trainings" asp-action="Create" class="btn btn-primary mb-3">Yeni eğitim</a>
+
+<form asp-controller="Trainings" asp-action="Index" method="get" class="row g-2 mb-4">
+    <div class="col-md-6">
+        <label asp-for="Search" class="form-label">Eğitim kodu veya adı</label>
+        <input asp-for="Search" class="form-control" placeholder="Örn. E04 veya doküman" />
+    </div>
+    <div class="col-md-2 align-self-end">
+        <button type="submit" class="btn btn-primary w-100">Ara</button>
+    </div>
+</form>
+
+<div class="table-responsive planner-scroll-list">
+    <table class="table table-striped table-hover align-middle">
+        <thead><tr><th>Kod</th><th>Eğitim</th><th>Tekrar</th><th>Dayanak</th><th></th></tr></thead>
+        <tbody>
+        @foreach (var item in Model.Trainings)
+        {
+            <tr>
+                <td>@item.Code</td><td>@item.Name</td>
+                <td>@(item.RenewalMonths.HasValue ? $"{item.RenewalMonths} ay" : "Tek sefer")</td>
+                <td>@(item.RuleBasis == "PILOT" ? "Pilot" : "Kaynaklı")</td>
+                <td><a asp-controller="Trainings" asp-action="Details" asp-route-id="@item.Id">Detay</a></td>
+            </tr>
+        }
+        </tbody>
+    </table>
+</div>
+@if (Model.Trainings.Count == 0)
+{
+    <p class="text-muted">Eşleşen eğitim bulunamadı.</p>
+}

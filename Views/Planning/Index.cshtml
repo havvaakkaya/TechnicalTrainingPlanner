@@ -1,0 +1,33 @@
+@model TechnicalTrainingPlanner.ViewModels.Planning.PlanningPage
+@{ ViewData["Title"] = "Planlama"; }
+<h1 class="h3">Planlama</h1>
+<p class="text-muted">Kurgusal pilot veriler. GREEDY ve CP-SAT aynı analiz ve zorunlu kısıtlarla çalışır.</p>
+<div asp-validation-summary="All" class="text-danger"></div>
+@if (Model.Analyses.Count == 0)
+{
+    <p class="alert alert-info">Önce <a asp-controller="Needs" asp-action="Index">ihtiyaç analizi</a> oluşturun.</p>
+}
+else
+{
+    <form asp-action="Index" method="get" class="mb-3">
+        <label for="analysisId" class="form-label">Analiz</label>
+        <div class="input-group" style="max-width:550px"><select id="analysisId" name="analysisId" class="form-select">
+            @foreach (var a in Model.Analyses)
+            { <option value="@a.Id" selected="@(a.Id == Model.AnalysisId)">#@a.Id · @a.Start.ToString("MM.yyyy") · @a.NeedCount ihtiyaç</option> }
+        </select><button class="btn btn-outline-primary">Göster</button></div>
+    </form>
+    <div class="card card-body mb-3">
+        <h2 class="h5">@(Model.Start?.ToString("dd.MM.yyyy")) – @(Model.End?.ToString("dd.MM.yyyy"))</h2>
+        <p>@Model.Needs ihtiyaç · @Model.Critical kritik ihtiyaç · @Model.Sessions planlı oturum</p>
+        @if (!Model.Current)
+        { <div class="alert alert-warning">Temel veriler değişti. <a asp-controller="Needs" asp-action="Index">Yeni analiz</a> oluşturun.</div> }
+        else if (Model.SelectedResultId.HasValue)
+        { <a asp-controller="Reports" asp-action="Index" asp-route-runId="@Model.SelectedResultId" class="btn btn-outline-primary align-self-start">Kayıtlı raporu gör</a> }
+        else
+        {
+            <form asp-action="Run" method="post"><input type="hidden" name="analysisId" value="@Model.AnalysisId" />
+                <button type="submit" class="btn btn-primary">İki yöntemi çalıştır ve plan oluştur</button></form>
+        }
+    </div>
+    <p class="small text-muted">Oturumlar önceden tanımlanır; eksik ön koşul, vardiya, izin, kapasite ve birim asgarisi uygulanır. Başarı kaydı yalnızca eğitim tamamlandığında girilir.</p>
+}

@@ -1,0 +1,9 @@
+@model TechnicalTrainingPlanner.ViewModels.Trainings.TrainingFormViewModel
+@{
+    ViewData["Title"] = "Yeni eğitim";
+}
+<h1 class="h3">Yeni pilot eğitim</h1>
+<p class="text-muted">Yeni kayıt pilot kuralıyla oluşturulur; E01 kaynaklı gereksinim ayrı tutulur.</p>
+<form asp-controller="Trainings" asp-action="Create" method="post">
+    <partial name="_TrainingForm" model="Model" />
+</form>

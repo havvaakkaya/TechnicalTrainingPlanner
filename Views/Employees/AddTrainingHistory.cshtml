@@ -1,0 +1,21 @@
+@model TechnicalTrainingPlanner.ViewModels.Employees.TrainingHistoryFormViewModel
+@{ ViewData["Title"] = "Eğitim geçmişi ekle"; }
+<h1 class="h3">Tamamlama kaydı ekle</h1>
+<p>@Model.EmployeeLabel · Kurgusal pilot veri</p>
+<p class="text-muted">Bu işlem eğitim geçmişini değiştirir. Önceden oluşturulmuş analizler güncel sayılmaz; yeni analiz oluşturun.</p>
+<form asp-action="AddTrainingHistory" asp-route-id="@Model.EmployeeId" method="post" class="card card-body" style="max-width:650px">
+    <div asp-validation-summary="All" class="text-danger"></div>
+    <div class="mb-3"><label asp-for="TrainingId" class="form-label">Eğitim</label>
+        <select asp-for="TrainingId" asp-items="Model.Trainings" class="form-select"><option value="0">Seçiniz</option></select>
+        <span asp-validation-for="TrainingId" class="text-danger"></span></div>
+    <div class="mb-3"><label asp-for="CompletedOn" class="form-label">Tamamlama tarihi</label>
+        <input asp-for="CompletedOn" asp-format="{0:yyyy-MM-dd}" type="date" class="form-control" />
+        <span asp-validation-for="CompletedOn" class="text-danger"></span></div>
+    <label class="form-check mb-3"><input asp-for="Passed" class="form-check-input" />
+        <span>Başarıyla tamamlandı</span></label>
+    <div class="mb-3"><label asp-for="EvidenceReference" class="form-label">Kanıt / kayıt referansı (isteğe bağlı)</label>
+        <input asp-for="EvidenceReference" class="form-control" />
+        <span asp-validation-for="EvidenceReference" class="text-danger"></span></div>
+    <div class="d-flex gap-2"><button type="submit" class="btn btn-primary">Kaydet</button>
+        <a asp-action="Details" asp-route-id="@Model.EmployeeId" class="btn btn-outline-secondary">Vazgeç</a></div>
+</form>

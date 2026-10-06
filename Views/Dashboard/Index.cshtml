@@ -1,0 +1,67 @@
+@model TechnicalTrainingPlanner.ViewModels.Planning.DashboardPage
+@{ ViewData["Title"] = "Dashboard"; }
+<style>
+    .training-dashboard { display:grid; grid-template-columns:minmax(0,7fr) minmax(155px,1fr); gap:1rem; align-items:stretch; }
+    .training-main { min-width:0; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:1rem; }
+    .training-span-two { grid-column:span 2; }
+    .training-side-frame { position:relative; min-width:0; min-height:0; }
+    .training-side { position:absolute; inset:0; display:flex; flex-direction:column; align-items:stretch; overflow:hidden; }
+    .training-notices { flex:1 1 auto; min-height:0; overflow-y:auto; overscroll-behavior:contain; }
+    .training-bar { height:1.1rem; min-width:3px; background:#0d6efd; border-radius:4px; }
+    @@media(max-width:950px) { .training-dashboard { display:block; } .training-side-frame { height:min(55vh,400px); margin-top:1rem; } }
+    @@media(max-width:650px) { .training-main { display:block; } .training-main > * { margin-bottom:1rem; } }
+</style>
+<h1 class="h3">Teknik eğitim Dashboard</h1>
+<p class="text-muted">Kurgusal pilot veriler · Analiz başlangıcı: @(Model.Start?.ToString("dd.MM.yyyy") ?? "—")</p>
+@if (Model.AnalysisId is null)
+{ <p class="alert alert-info">Önce <a asp-controller="Needs" asp-action="Index">ihtiyaç analizi</a> oluşturun.</p> }
+else
+{
+<div class="training-dashboard">
+    <div class="training-main">
+        <div class="card card-body"><span>Kritik ihtiyacı olan çalışan</span><strong class="display-6">@Model.CriticalEmployees</strong></div>
+        <div class="card card-body"><span>Gecikmiş ihtiyacı olan çalışan</span><strong class="display-6">@Model.OverdueEmployees</strong></div>
+        <div class="card card-body"><span>Atanamayan kritik çalışan</span><strong class="display-6">@(Model.UnassignedCriticalEmployees?.ToString() ?? "—")</strong></div>
+        <section class="card card-body"><h2 class="h6">Birimlere göre kritik çalışanlar</h2>
+            @foreach (var d in Model.Departments)
+            { <div class="mb-2"><div class="small">@d.Name · @d.Employees</div>
+                <div class="training-bar" style="width:@(Math.Max(4, d.Employees * 100 / Math.Max(1, Model.Departments.Max(x => x.Employees))))%"></div></div> }
+            @if (Model.Departments.Count == 0) { <p>Bu analizde kritik çalışan yok.</p> }
+        </section>
+        <section class="card card-body training-span-two"><h2 class="h6">Operasyon açısından dikkat gerektiren vardiyalar</h2>
+            @if (Model.SelectedRunId is null) { <p>Plan oluşturulmadı.</p> }
+            else if (Model.ShiftWarnings.Count == 0) { <p>Asgari kadroya yakın vardiya bulunmadı.</p> }
+            else { <ul>@foreach (var w in Model.ShiftWarnings) { <li>@w</li> }</ul> }
+        </section>
+        <div class="card card-body"><span>Toplam gecikmiş ihtiyaç</span><strong class="display-6">@Model.OverdueNeeds</strong></div>
+        <div class="card card-body training-span-two"><span>Başlangıçtan sonraki 60 günde gelen ihtiyaç</span><strong class="display-6">@Model.DueIn60Days</strong></div>
+    </div>
+    <div class="training-side-frame">
+        <aside class="card card-body training-side" aria-label="Yaklaşan oturumlar">
+            <h2 class="h6">Yaklaşan oturumlar</h2>
+            <div class="training-notices" tabindex="0" aria-label="Yaklaşan oturumlar listesi; kaydırılabilir">
+                @foreach (var s in Model.Sessions.Take(6))
+                { <button type="button" class="btn btn-link text-start border-bottom py-2 text-decoration-none w-100" data-bs-toggle="modal" data-bs-target="#session-@s.Id">
+                    <strong>@s.Training</strong><br /><small>@s.StartsLocal.ToString("dd.MM HH:mm")</small><br />
+                    <small>@(s.Participants?.ToString() ?? "—") / @s.Capacity kişi</small></button> }
+                @if (Model.Sessions.Count == 0) { <span>Bu ay oturum yok.</span> }
+            </div>
+            <a asp-controller="Sessions" asp-action="Index" class="btn btn-outline-primary mt-2">Tüm oturumlar →</a>
+        </aside>
+    </div>
+</div>
+<div class="mt-3"><a asp-controller="Needs" asp-action="Index" asp-route-runId="@Model.AnalysisId">İhtiyaçlara git</a> ·
+    <a asp-controller="Planning" asp-action="Index" asp-route-analysisId="@Model.AnalysisId">Planlamaya git</a> ·
+    <a asp-controller="Reports" asp-action="Index" asp-route-runId="@Model.SelectedRunId">Raporlar</a></div>
+@foreach (var s in Model.Sessions.Take(6))
+{ <div class="modal fade" id="session-@s.Id" tabindex="-1" aria-label="Oturum bilgisi">
+    <div class="modal-dialog"><div class="modal-content">
+        <div class="modal-header"><h2 class="modal-title h5">@s.Training · Oturum #@s.Id</h2>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button></div>
+        <div class="modal-body"><p>@s.StartsLocal.ToString("dd.MM.yyyy HH:mm")–@s.EndsLocal.ToString("HH:mm")</p>
+            <p>Eğitmen: @s.Instructor<br />Sınıf: @s.Classroom · @s.Location<br />Katılımcı: @(s.Participants?.ToString() ?? "Plan oluşturulmadı") / @s.Capacity</p>
+            @if (s.ParticipantNames.Length > 0)
+            { <ul>@foreach (var name in s.ParticipantNames) { <li>@name</li> }</ul> }
+        </div><div class="modal-footer"><a asp-controller="Sessions" asp-action="Details" asp-route-id="@s.Id" class="btn btn-outline-primary">Oturum detayı</a></div>
+    </div></div></div> }
+}
